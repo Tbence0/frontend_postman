@@ -1,35 +1,37 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function ItemsList() {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch("http://192.168.50.49:3005/items")
+      .then(res => {
+        if (!res.ok) throw new Error("Hiba a lekérésnél");
+        return res.json();
+      })
+      .then(data => {
+        setItems(data);
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <p>Betöltés...</p>;
+  if (error) return <p>Hiba történt: {error}</p>;
+  if (items.length === 0) return <p>Nincs elem az adatbázisban.</p>;
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div>
+      <h2>Összes item</h2>
+      <ul>
+        {items.map(item => (
+          <li key={item.id ?? Math.random()}>
+            {JSON.stringify(item)}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
-
-export default App
